@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Type｜校園人格測驗</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #090c18;
+  color: #f5f7ff;
+  font-family: "Microsoft JhengHei", sans-serif;
+  line-height: 1.7;
+}
+header, main, footer {
+  width: 92%;
+  max-width: 850px;
+  margin: auto;
+}
+header {
+  padding: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #293650;
+  gap: 10px;
+}
+.logo { color: #54f5ff; font-weight: bold; }
+button {
+  padding: 10px 14px;
+  border: 1px solid #394765;
+  border-radius: 10px;
+  background: #182238;
+  color: white;
+  cursor: pointer;
+  margin: 3px;
+}
+button:hover { border-color: #54f5ff; }
+.primary {
+  background: linear-gradient(100deg,#54f5ff,#b69aff);
+  color: #090c18;
+  font-weight: bold;
+}
+.hero { text-align: center; padding: 40px 0; }
+h1 { font-size: clamp(34px,7vw,54px); line-height: 1.3; }
+.gradient {
+  background: linear-gradient(90deg,#54f5ff,#b69aff,#ff83ce);
+  color: transparent;
+  background-clip: text;
+}
+.muted { color: #a8b4ca; }
+.panel {
+  background: #131a2b;
+  border: 1px solid #303c58;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 18px 0;
+}
+.hidden { display: none !important; }
+.question {
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid #34415d;
+  border-radius: 12px;
+}
+.option {
+  display: block;
+  padding: 10px;
+  margin: 8px 0;
+  background: #0d1424;
+  border: 1px solid #303c55;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.option:has(input:checked) {
+  border-color: #54f5ff;
+  background: #15303b;
+}
+input { accent-color: #54f5ff; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+}
+.stat {
+  text-align: center;
+  padding: 10px 4px;
+  background: #0d1424;
+  border-radius: 10px;
+}
+.score { font-size: 24px; font-weight: bold; }
+.cyan { color: #54f5ff; }
+.purple { color: #b69aff; }
+.pink { color: #ff83ce; }
+.bar {
+  height: 10px;
+  background: #303c55;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.fill { height: 100%; width: 0; }
+.actions { margin-top: 18px; }
+.history {
+  padding: 14px;
+  margin: 12px 0;
+  border: 1px solid #34415d;
+  border-radius: 12px;
+}
+footer {
+  text-align: center;
+  padding: 25px 0;
+  color: #a8b4ca;
+}
+@media(max-width:520px) {
+  header { flex-wrap: wrap; }
+  .panel { padding: 13px; }
+  .stats { gap: 4px; }
+  .score { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">CAMPUS TYPE<br>PERSONALITY LAB</div>
+  <div>
+    <button id="homeBtn">首頁</button>
+    <button id="historyBtn">歷史紀錄</button>
+  </div>
+</header>
+<main>
+<section id="home" class="hero">
+  <p class="cyan">DISCOVER YOUR CAMPUS SELF</p>
+  <h1>找到你的<br><span class="gradient">校園人格</span></h1>
+  <p class="muted">用 12 道大學生活情境題，探索你的社交、探索與規劃風格。</p>
+  <p>✦ 六種人格　 ◈ 三大面向　 ⌁ 約 3 分鐘</p>
+  <button class="primary" id="startBtn">開始探索 →</button>
+  <p class="muted">本測驗僅供娛樂與自我探索，不是心理診斷。</p>
+</section>
+<section id="quiz" class="panel hidden">
+  <h2>選出最像你的答案</h2>
+  <p id="progress" class="cyan"></p>
+  <div id="questions"></div>  <p id="error" class="pink"></p>
+  <div class="actions">
+    <button id="cancelBtn">返回首頁</button>
+    <button class="primary" id="submitBtn">分析我的人格</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden">
+  <div style="text-align:center">
+    <p class="cyan">YOUR CAMPUS TYPE</p>
+    <div id="emoji" style="font-size:48px">✨</div>
+    <h1 id="typeName" class="gradient">你的校園人格</h1>
+    <p id="tagline"></p>
+    <p id="description"></p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div>社交</div>
+      <div id="socialScore" class="score cyan">0%</div>
+    </div>
+    <div class="stat">
+      <div>探索</div>
+      <div id="exploreScore" class="score purple">0%</div>
+    </div>
+    <div class="stat">
+      <div>規劃</div>
+      <div id="planScore" class="score pink">0%</div>
+    </div>
+  </div>
+
+  <h3>你的面向分析</h3>
+  <p>社交 Social</p>
+  <div class="bar"><div id="socialBar" class="fill" style="background:#54f5ff"></div></div>
+  <p>探索 Explore</p>
+  <div class="bar"><div id="exploreBar" class="fill" style="background:#b69aff"></div></div>
+  <p>規劃 Planning</p>
+  <div class="bar"><div id="planBar" class="fill" style="background:#ff83ce"></div></div>
+
+  <h3>你的優勢</h3>
+  <p id="strength"></p>
+  <h3>給你的提醒</h3>
+  <p id="reminder"></p>
+  <h3>大學生活行動建議</h3>
+  <ul id="advice"></ul>
+  <p id="saved" class="muted"></p>
+
+  <div class="actions">
+    <button class="primary" id="copyBtn">複製結果</button>
+    <button id="retryBtn">再測一次</button>
+    <button id="resultHistoryBtn">歷史紀錄</button>
+  </div>
+</section>
+
+<section id="history" class="panel hidden">
+  <h2>測驗歷史紀錄</h2>
+  <p class="muted">紀錄只保存在目前瀏覽器，不會上傳伺服器。</p>
+  <div id="historyList"></div>
+  <button id="clearBtn">清除全部紀錄</button>
+</section>
+</main>
+
+<footer>Campus Type · 探索你的大學生活風格</footer><script>
+"use strict";
+
+const KEY = "campusTypeHistory";
+
+const questions = [
+  ["開學第一週，你會如何認識新朋友？", [
+    ["主動找同學聊天", [2,0,0]],
+    ["參加迎新、探索活動", [1,2,0]],
+    ["先觀察，遇到聊得來的人再交流", [0,1,1]],
+    ["先安排好生活再拓展交友圈", [0,0,2]]
+  ]],
+  ["社團博覽會有很多攤位，你會？", [
+    ["找朋友一起逛", [2,0,0]],
+    ["看到新奇社團就想體驗", [0,2,0]],
+    ["比較時間和活動內容", [0,0,2]],
+    ["挑幾個有興趣的慢慢了解", [1,1,1]]
+  ]],
+  ["遇到很難理解的課程內容，你會？", [
+    ["找同學討論", [2,0,0]],
+    ["搜尋不同影片與學習方法", [0,2,0]],
+    ["拆成小段安排時間", [0,0,2]],
+    ["先研究，再針對問題求助", [0,1,1]]
+  ]],
+  ["朋友臨時邀你參加陌生活動，你會？", [
+    ["馬上答應，和大家一起玩", [2,1,0]],
+    ["很期待新體驗", [0,2,0]],
+    ["先確認時間和行程", [0,0,2]],
+    ["看當天狀態再決定", [1,1,1]]
+  ]],
+  ["兩週後要交報告，你會？", [
+    ["先找組員討論", [2,0,1]],
+    ["蒐集新點子", [0,2,0]],
+    ["拆解任務、安排進度", [0,0,2]],
+    ["先做有把握的部分", [0,1,1]]
+  ]],
+  ["課堂分組時，你通常會？", [
+    ["帶動討論、協調想法", [2,0,1]],
+    ["提出新點子", [0,2,0]],
+    ["整理分工與進度", [0,0,2]],
+    ["先聽大家意見再選任務", [1,0,1]]
+  ]],
+  ["理想的週末大學生活是？", [
+    ["和朋友吃飯聊天", [2,0,0]],
+    ["探索新店或新地方", [0,2,0]],
+    ["完成待辦事項", [0,0,2]],
+    ["依心情決定行程", [1,1,1]]
+  ]],
+  ["想加入新社團，你最在意？", [
+    ["有沒有機會認識朋友", [2,0,0]],
+    ["能不能學到新技能", [0,2,0]],
+    ["時間投入是否合理", [0,0,2]],
+    ["先參加活動感受氣氛", [1,1,1]]
+  ]],
+  ["課業、社團和朋友邀約撞期，你會？", [
+    ["和大家協調時間", [2,0,1]],
+    ["選擇最想體驗的事情", [0,2,0]],
+    ["按重要性安排順序", [0,0,2]],
+    ["看看能否調整行程", [1,1,1]]
+  ]],
+  ["來到陌生環境時，你會？", [
+    ["主動認識身邊的人", [2,0,0]],
+    ["四處探索新事物", [0,2,0]],
+    ["先了解規則和環境", [0,0,2]],
+    ["熟悉後再找到自己的節奏", [1,1,1]]
+  ]],
+  ["活動結果不如預期，你會？", [
+    ["和參與的人聊聊感受", [2,0,0]],
+    ["當成新經驗，想想下次怎麼做", [0,2,0]],
+    ["檢查流程並改善", [0,0,2]],
+    ["整理收穫再繼續", [1,1,1]]
+  ]],
+  ["你希望一年後的大學生活有何改變？", [
+    ["認識更多朋友", [2,0,0]],
+    ["找到新的興趣方向", [0,2,0]],
+    ["更會管理時間", [0,0,2]],
+    ["更了解自己適合的生活方式", [1,1,1]]
+  ]]
+]; const types = {
+  social: {
+    name: "校園社交發電機",
+    icon: "⚡",
+    tagline: "連結讓你充電，陪伴讓校園更有溫度。",
+    description: "你享受與人互動，也願意主動創造交流機會。朋友和共同經驗能讓你的大學生活更有趣。",
+    strength: "你擅長開啟互動、分享想法，並在團體中建立連結。",
+    reminder: "不必參加每一場活動，保留獨處和休息時間也很重要。",
+    advice: [
+      "參加一場感興趣的迎新活動。",
+      "每週保留休息時間。",
+      "遇到不同意見時，先聽懂對方。"
+    ]
+  },
+  explore: {
+    name: "勇敢探索玩家",
+    icon: "🚀",
+    tagline: "新體驗是你的指南針，未知是你的遊樂場。",
+    description: "你對新鮮事物充滿好奇，願意嘗試不同活動，在大學裡發現新的可能。",
+    strength: "你願意走出舒適圈，從體驗中累積觀點和興趣。",
+    reminder: "不必每件事都參加，給自己時間沉澱和選擇。",
+    advice: [
+      "列出三個想嘗試的校園活動。",
+      "加入社團前確認時間。",
+      "記下每次體驗的收穫。"
+    ]
+  },
+  plan: {
+    name: "生活規劃指揮官",
+    icon: "🧭",
+    tagline: "掌握自己的節奏，讓忙碌更有方向。",
+    description: "你重視安排、優先順序與生活節奏，傾向先釐清狀況，再逐步完成任務。",
+    strength: "你善於將複雜任務拆解，讓課業和生活更有秩序。",
+    reminder: "計畫是幫助自己，不必讓每一天都照表操課。",
+    advice: [
+      "每週整理課程和報告期限。",
+      "加入社團前了解時間投入。",
+      "替臨時變化保留空間。"
+    ]
+  },
+  connector: {
+    name: "溫暖連結觀察家",
+    icon: "🌙",
+    tagline: "用自己的步調靠近別人，讓關係慢慢變深。",
+    description: "你重視有品質的交流，也會觀察環境與他人的感受，逐漸建立真誠的關係。",
+    strength: "你願意理解他人，也能建立穩定的人際連結。",
+    reminder: "不必每次都等別人先開口，小小的主動也能帶來新關係。",
+    advice: [
+      "從同組同學開始聊天。",
+      "參加規模較小的活動。",
+      "試著主動邀請同學一起吃飯。"
+    ]
+  },
+  free: {
+    name: "自由探索旅人",
+    icon: "🌌",
+    tagline: "在自由與好奇之間，慢慢走出自己的路。",
+    description: "你喜歡保有自主空間，也樂於探索不同方向，並尋找適合自己的生活節奏。",
+    strength: "你能依照興趣做選擇，並在過程中調整方向。",
+    reminder: "保有自由不代表什麼都得自己完成，適時求助也是自主選擇。",
+    advice: [
+      "先體驗一項感興趣的活動。",
+      "找同學分享興趣。",
+      "替重要課業設定期限。"
+    ]
+  },
+  balanced: {
+    name: "平衡成長實踐家",
+    icon: "✨",
+    tagline: "你在體驗生活與日常安排之間尋找平衡。",
+    description: "你在社交、探索和規劃之間展現多元偏好，並嘗試找到適合自己的大學生活。",
+    strength: "你能依照情境調整做法，在不同生活面向之間取得平衡。",
+    reminder: "不必每個面向都做到滿分，不同時期可以有不同重心。",
+    advice: [
+      "設定課業、人際和興趣目標。",
+      "定期回顧自己的安排。",
+      "優先處理當下重要的事。"
+    ]
+  }
+};
+const $ = id => document.getElementById(id);
+let current = null;
+
+function getHistory() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(data) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data.slice(0, 50)));
+    updateCount();
+    return true;
+  } catch {
+    alert("無法保存紀錄，請檢查瀏覽器儲存空間。");
+    return false;
+  }
+}
+
+function updateCount() {
+  $("historyBtn").textContent = "歷史紀錄 (" + getHistory().length + ")";
+}
+
+function show(id) {
+  ["home", "quiz", "result", "history"].forEach(name => {
+    $(name).classList.toggle("hidden", name !== id);
+  });
+  window.scrollTo(0, 0);
+}
+
+function renderQuestions() {
+  $("questions").innerHTML = questions.map((q, i) => `
+    <fieldset class="question" id="qbox${i}">
+      <legend>
+        <span class="cyan">QUESTION ${i + 1} / 12</span><br>
+        ${q[0]}
+      </legend>
+      ${q[1].map((a, j) => `
+        <label class="option">
+          <input type="radio" name="q${i}" value="${j}">
+          ${String.fromCharCode(65 + j)}. ${a[0]}
+        </label>
+      `).join("")}
+    </fieldset>
+  `).join("");
+
+  $("questions").onchange = updateProgress;
+  updateProgress();
+}
+
+function getAnswers() {
+  return questions.map((q, i) => {
+    const selected = document.querySelector(
+      `input[name="q${i}"]:checked`
+    );
+    return selected ? Number(selected.value) : null;
+  });
+}
+
+function updateProgress() {
+  const answers = getAnswers();
+  const completed = answers.filter(x => x !== null).length;
+  $("progress").textContent =
+    `已完成 ${completed} / ${questions.length} 題`;
+}
+
+function startQuiz() {
+  renderQuestions();
+  $("error").textContent = "";
+  show("quiz");
+}
+
+function analyze(answers) {
+  const totals = [0, 0, 0];
+  const maximums = [0, 0, 0];
+
+  questions.forEach((q, i) => {
+    q[1].forEach(option => {
+      option[1].forEach((value, d) => {
+        maximums[d] += Math.max(
+          maximums[d] === 0 ? 0 : 0,
+          value
+        );
+      });
+    });
+
+    const points = q[1][answers[i]][1];
+    points.forEach((value, d) => totals[d] += value);
+  });
+
+  const maxScore = questions.length * 2;
+  const scores = totals.map(value =>
+    Math.round(value / maxScore * 100)
+  );
+
+  const sorted = [0, 1, 2].sort(
+    (a, b) => scores[b] - scores[a]
+  );
+
+  const highest = sorted[0];
+  const second = sorted[1];
+  const lowest = sorted[2];
+
+  let type;
+
+  if (scores[highest] - scores[lowest] <= 12) {
+    type = "balanced";
+  } else if (
+    scores[highest] - scores[second] <= 10 &&
+    scores[second] - scores[lowest] > 8
+  ) {
+    if (highest === 0 && second === 2) {
+      type = "connector";
+    } else {
+      type = "free";
+    }
+  } else {
+    type = ["social", "explore", "plan"][highest];
+  }
+
+  return { scores, type };
+}
+
+function submitQuiz() {
+  const answers = getAnswers();
+  const missing = answers.findIndex(x => x === null);
+
+  if (missing !== -1) {
+    $("error").textContent =
+      `你還沒回答第 ${missing + 1} 題，請完成後再提交。`;
+    $("qbox" + missing).scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+    return;
+  }
+
+  const result = analyze(answers);
+
+  current = {
+    id: Date.now().toString(),
+    date: new Date().toISOString(),
+    answers,
+    scores: result.scores,
+    type: result.type
+  };
+
+  renderResult(current);
+
+  const history = getHistory();
+  history.unshift(current);
+  const saved = saveHistory(history);
+
+  $("saved").textContent = saved
+    ? "✓ 已保存於此瀏覽器。"
+    : "這次結果尚未保存。";
+
+  show("result");
+}
+function renderResult(item) {
+  const t = types[item.type];
+
+  $("emoji").textContent = t.icon;
+  $("typeName").textContent = t.name;
+  $("tagline").textContent = t.tagline;
+  $("description").textContent = t.description;
+  $("strength").textContent = t.strength;
+  $("reminder").textContent = t.reminder;
+
+  const keys = ["social", "explore", "plan"];
+
+  keys.forEach((key, i) => {
+    const score = item.scores[i];
+    $(key + "Score").textContent = score + "%";
+    $(key + "Bar").style.width = score + "%";
+  });
+
+  $("advice").replaceChildren();
+
+  t.advice.forEach(text => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    $("advice").appendChild(li);
+  });
+}
+
+function makeShareText(item) {
+  const t = types[item.type];
+
+  return [
+    "我的 Campus Type 校園人格：" + t.name + " " + t.icon,
+    t.tagline,
+    "",
+    t.description,
+    "",
+    "社交：" + item.scores[0] + "%",
+    "探索：" + item.scores[1] + "%",
+    "規劃：" + item.scores[2] + "%",
+    "",
+    "給我的大學生活建議：",
+    ...t.advice.map((text, i) => (i + 1) + ". " + text),
+    "",
+    "本測驗僅供娛樂與自我探索。"
+  ].join("\n");
+}
+
+async function copyResult(item) {
+  const text = makeShareText(item);
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      throw new Error("Clipboard API unavailable");
+    }
+
+    alert("人格結果已複製，可以分享給朋友！");
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+
+    document.body.appendChild(area);
+    area.select();
+
+    const success = document.execCommand("copy");
+    area.remove();
+
+    if (success) {
+      alert("人格結果已複製！");
+    } else {
+      window.prompt("請手動複製以下結果：", text);
+    }
+  }
+}
+function renderResult(item) {
+  const t = types[item.type];
+
+  $("emoji").textContent = t.icon;
+  $("typeName").textContent = t.name;
+  $("tagline").textContent = t.tagline;
+  $("description").textContent = t.description;
+  $("strength").textContent = t.strength;
+  $("reminder").textContent = t.reminder;
+
+  const keys = ["social", "explore", "plan"];
+
+  keys.forEach((key, i) => {
+    const score = item.scores[i];
+    $(key + "Score").textContent = score + "%";
+    $(key + "Bar").style.width = score + "%";
+  });
+
+  $("advice").replaceChildren();
+
+  t.advice.forEach(text => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    $("advice").appendChild(li);
+  });
+}
+
+function makeShareText(item) {
+  const t = types[item.type];
+
+  return [
+    "我的 Campus Type 校園人格：" + t.name + " " + t.icon,
+    t.tagline,
+    "",
+    t.description,
+    "",
+    "社交：" + item.scores[0] + "%",
+    "探索：" + item.scores[1] + "%",
+    "規劃：" + item.scores[2] + "%",
+    "",
+    "給我的大學生活建議：",
+    ...t.advice.map((text, i) => (i + 1) + ". " + text),
+    "",
+    "本測驗僅供娛樂與自我探索。"
+  ].join("\n");
+}
+
+async function copyResult(item) {
+  const text = makeShareText(item);
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      throw new Error("Clipboard API unavailable");
+    }
+
+    alert("人格結果已複製，可以分享給朋友！");
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+
+    document.body.appendChild(area);
+    area.select();
+
+    const success = document.execCommand("copy");
+    area.remove();
+
+    if (success) {
+      alert("人格結果已複製！");
+    } else {
+      window.prompt("請手動複製以下結果：", text);
+    }
+  }
+}
+function renderHistory() {
+  const data = getHistory();
+  const list = $("historyList");
+  list.replaceChildren();
+  updateCount();
+
+  if (data.length === 0) {
+    list.textContent = "目前沒有測驗紀錄，完成測驗後就會顯示在這裡。";
+    return;
+  }
+
+  data.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "history";
+
+    const title = document.createElement("h3");
+    title.textContent = types[item.type].icon + " " + types[item.type].name;
+
+    const date = document.createElement("p");
+    date.className = "muted";
+    date.textContent = new Date(item.date).toLocaleString("zh-TW");
+
+    const scores = document.createElement("p");
+    scores.textContent =
+      "社交 " + item.scores[0] + "%　" +
+      "探索 " + item.scores[1] + "%　" +
+      "規劃 " + item.scores[2] + "%";
+
+    const viewButton = document.createElement("button");
+    viewButton.textContent = "查看結果";
+    viewButton.onclick = () => {
+      current = item;
+      renderResult(item);
+      $("saved").textContent = "歷史紀錄：" +
+        new Date(item.date).toLocaleString("zh-TW");
+      show("result");
+    };
+
+    const copyButton = document.createElement("button");
+    copyButton.textContent = "複製結果";
+    copyButton.onclick = () => copyResult(item);
+
+    card.append(title, date, scores, viewButton, copyButton);
+    list.appendChild(card);
+  });
+}
+
+$("startBtn").onclick = startQuiz;
+$("retryBtn").onclick = startQuiz;
+$("submitBtn").onclick = submitQuiz;
+
+$("cancelBtn").onclick = () => show("home");
+$("homeBtn").onclick = () => show("home");
+
+$("historyBtn").onclick = () => {
+  renderHistory();
+  show("history");
+};
+
+$("resultHistoryBtn").onclick = () => {
+  renderHistory();
+  show("history");
+};
+
+$("copyBtn").onclick = () => {
+  if (current) copyResult(current);
+};
+
+$("clearBtn").onclick = () => {
+  const data = getHistory();
+
+  if (data.length === 0) {
+    alert("目前沒有歷史紀錄。");
+    return;
+  }
+
+  if (!confirm("確定要刪除所有測驗紀錄嗎？此操作無法復原。")) {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(KEY);
+    renderHistory();
+    alert("所有歷史紀錄已清除。");
+  } catch {
+    alert("清除失敗，請檢查瀏覽器設定。");
+  }
+};
+
+updateCount();
+</script>
+</body>
+</html>
+
